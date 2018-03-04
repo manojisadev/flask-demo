@@ -5,6 +5,7 @@ from passlib.hash import sha256_crypt
 from flask_sqlalchemy import SQLAlchemy
 from functools import wraps
 from flask_mongoengine import MongoEngine
+import os
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = 'secret123' #import from config files
@@ -18,7 +19,9 @@ app.config['MONGODB_SETTINGS'] = {
     'host': 'localhost',
     'port': 27017
 }
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:root@localhost/testdb'
+# app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:root@localhost/testdb'
+
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['CLEARDB_DATABASE_URL']
 
 db = SQLAlchemy(app)
 
