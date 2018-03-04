@@ -4,13 +4,31 @@ from wtforms import Form, StringField, TextAreaField, PasswordField, validators
 from passlib.hash import sha256_crypt
 from flask_sqlalchemy import SQLAlchemy
 from functools import wraps
+from flask_mongoengine import MongoEngine
 
 app = Flask(__name__)
-app.config["SECRET_KEY"] = 'secret123'
+app.config["SECRET_KEY"] = 'secret123' #import from config files
 app.config['SESSION_TYPE'] = 'filesystem'
-
+# app.config['MONGODB_SETTINGS'] = {
+#     'DB': 'yelptest',
+#     'host': 'mongodb://localhost:27017'
+# }
+app.config['MONGODB_SETTINGS'] = {
+    'db': 'yelptest',
+    'host': 'localhost',
+    'port': 27017
+}
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:root@localhost/testdb'
+
 db = SQLAlchemy(app)
+
+dbm = MongoEngine(app)
+db.init_app(app)
+
+class business(dbm.DynamicDocument):
+	name = dbm.StringField()
+	city = dbm.StringField()
+
 
 class User(db.Model):
 	__tablename__ = 'Users'
@@ -101,7 +119,7 @@ def logout():
 	flash('You have been logged out', 'success')
 	return redirect(url_for('login'))
 
-def dashboard_auth(f):
+def session_auth(f):
 	@wraps(f)
 	def wrap(*args, **kwargs):
 		if 'logged_in' not in session:
@@ -111,9 +129,22 @@ def dashboard_auth(f):
 	return wrap	
 
 @app.route('/dashboard')
-@dashboard_auth
+@session_auth
 def dashboard():
 	return render_template('dashboard.html')
+
+# @app.route('/search', defaults={'city': None, 'page': 1})
+@app.route('/search')
+@app.route('/search/<string:term>')
+@app.route('/search/<int:page_num>')
+@app.route('/search/<string:term>/<int:page_num>')
+@session_auth
+def search(term=None, page_num=1):
+	if term == None:
+		search_items = business.objects().paginate(per_page=10, page=page_num, error_out=True)
+	else:
+		search_items = business.objects(city=term).paginate(per_page=10, page=page_num, error_out=True)
+	return render_template('search.html', search_items=search_items, term=term)
 
 if __name__ == '__main__':
 	app.run(debug=True)
