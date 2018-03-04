@@ -58,6 +58,8 @@ class LoginForm(Form):
 	username = StringField('Username', [validators.Length(min = 5, max = 20)])
 	password_submitted = PasswordField('Password', [validators.DataRequired()])
 
+class SearchForm(Form):
+	search_field = StringField('City Name')
 
 @app.route('/register', methods = ['GET', 'POST'])
 def register():
@@ -89,7 +91,7 @@ def login():
 		password_submitted = form.password_submitted.data
 		registered_user = User.query.filter_by(username = username).first()
 		if registered_user is None:
-			#can be changed to reflect the error of 
+			#can be changed to reflect the error of incorrect username/password
 			flash('No such user exists!', 'danger')
 			return redirect(url_for('login'))
 		password = registered_user.password
@@ -131,20 +133,31 @@ def session_auth(f):
 @app.route('/dashboard')
 @session_auth
 def dashboard():
-	return render_template('dashboard.html')
+	form = SearchForm(request.form)
+	return render_template('dashboard.html', form = form)
 
-# @app.route('/search', defaults={'city': None, 'page': 1})
-@app.route('/search')
-@app.route('/search/<string:term>')
+class SearchValidator(object):
+	@staticmethod
+	def search_default(search_field):
+		if search_field == None: return True
+		if search_field == '': return True
+		if search_field.isspace(): return True 
+		return False
+
+@app.route('/search', methods = ['GET', 'POST'])
+@app.route('/search/<string:search_field>')
 @app.route('/search/<int:page_num>')
-@app.route('/search/<string:term>/<int:page_num>')
+@app.route('/search/<string:search_field>/<int:page_num>')
 @session_auth
-def search(term=None, page_num=1):
-	if term == None:
+def search(search_field=None, page_num=1):
+	form = SearchForm(request.form)
+	if request.method == 'POST' and form.validate():
+		search_field = form.search_field.data
+	if SearchValidator.search_default(search_field):
 		search_items = business.objects().paginate(per_page=10, page=page_num, error_out=True)
 	else:
-		search_items = business.objects(city=term).paginate(per_page=10, page=page_num, error_out=True)
-	return render_template('search.html', search_items=search_items, term=term)
+		search_items = business.objects(city=search_field).paginate(per_page=10, page=page_num, error_out=True)
+	return render_template('dashboard.html', search_items=search_items, search_field=search_field, form = form)
 
 if __name__ == '__main__':
 	app.run(debug=True)

@@ -1,0 +1,23 @@
+<ul>
+    {% if search_items.items %}
+      {% for search_item in search_items.items %}
+          <li>{{ search_item.name }}</li>
+      {% endfor %}
+    {% else %}
+      <h1> Empty Result </h1>  
+    {% endif %}
+</ul>
+
+<ul class="pagination">
+{% for page in search_items.iter_pages() %}
+  {% if page %}
+    {% if search_field == None %}
+      <li><a href="{{ url_for('search', page_num=page) }}">{{ page }}</a></li>
+    {% else %}
+      <li><a href="{{ url_for('search', search_field=search_field, page_num=page) }}">{{ page }}</a></li>
+    {% endif %}
+  {% else %}
+      <li><span class=ellipsis>…</span></li>
+  {% endif %}
+{% endfor %}
+</ul>
