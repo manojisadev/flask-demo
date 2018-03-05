@@ -87,6 +87,8 @@ def register():
 			password = password)
 		db.session.add(user)
 		db.session.commit()
+		session['logged_in'] = True
+		session['username'] = username
 		flash('Account created!', 'success')
 		return redirect(url_for('index'))
 
