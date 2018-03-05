@@ -6,6 +6,7 @@ from flask_sqlalchemy import SQLAlchemy
 from functools import wraps
 from flask_mongoengine import MongoEngine
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.sql import exists
 import os
 
 app = Flask(__name__)
@@ -87,6 +88,10 @@ def register():
 				username = username, 
 				email = email,
 				password = password)
+			db_validation = db.session.query(exists().where(User.email == email or User.username == username)).scalar()
+			if db_validation:
+				flash('User already exists! Try another email/username', 'warning')
+				return redirect(url_for('register'))				
 			db.session.add(user)
 			db.session.commit()
 			session['logged_in'] = True
