@@ -88,7 +88,7 @@ def register():
 				username = username, 
 				email = email,
 				password = password)
-			db_validation = db.session.query(exists().where(User.email == email or User.username == username)).scalar()
+			db_validation = db.session.query(exists().where(User.email == email)).scalar()
 			if db_validation:
 				flash('User already exists! Try another email/username', 'warning')
 				return redirect(url_for('register'))				
