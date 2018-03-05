@@ -8,17 +8,23 @@ from flask_mongoengine import MongoEngine
 import os
 
 app = Flask(__name__)
-app.config["SECRET_KEY"] = 'secret123' #import from config files
+# app.config["SECRET_KEY"] = 'flask-demo'
+
+app.config["SECRET_KEY"] = os.environ['SECRET_KEY']
 app.config['SESSION_TYPE'] = 'filesystem'
+
 # app.config['MONGODB_SETTINGS'] = {
-#     'DB': 'yelptest',
-#     'host': 'mongodb://localhost:27017'
+#     'db': 'yelptest',
+#     'host': 'localhost',
+#     'port': 27017
 # }
+
+
 app.config['MONGODB_SETTINGS'] = {
-    'db': 'yelptest',
-    'host': 'localhost',
-    'port': 27017
+    'db': 'heroku_sk3bnlzs',
+    'host': os.environ['MONGODB_URI']
 }
+
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:root@localhost/testdb'
 
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['CLEARDB_DATABASE_URL']
@@ -28,7 +34,7 @@ db = SQLAlchemy(app)
 dbm = MongoEngine(app)
 db.init_app(app)
 
-class business(dbm.DynamicDocument):
+class Business(dbm.DynamicDocument):
 	name = dbm.StringField()
 	city = dbm.StringField()
 
@@ -157,9 +163,9 @@ def search(search_field=None, page_num=1):
 	if request.method == 'POST' and form.validate():
 		search_field = form.search_field.data
 	if SearchValidator.search_default(search_field):
-		search_items = business.objects().paginate(per_page=10, page=page_num, error_out=True)
+		search_items = Business.objects().paginate(per_page=10, page=page_num, error_out=True)
 	else:
-		search_items = business.objects(city=search_field).paginate(per_page=10, page=page_num, error_out=True)
+		search_items = Business.objects(city=search_field).paginate(per_page=10, page=page_num, error_out=True)
 	return render_template('dashboard.html', search_items=search_items, search_field=search_field, form = form)
 
 if __name__ == '__main__':
