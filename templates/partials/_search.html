@@ -1,4 +1,4 @@
-<ul>
+<!-- <ul>
     {% if search_items.items %}
       {% for search_item in search_items.items %}
           <li>{{ search_item.name }}</li>
@@ -6,12 +6,31 @@
     {% else %}
       <h1> Empty Result </h1>  
     {% endif %}
-</ul>
+</ul> -->
+
+{% if search_items.items %}
+  <table class="table">
+    <thead>
+    <tr>
+      <th> Business Name </th>
+      <th> City </th>
+    </tr>
+    </thead>
+    {% for search_item in search_items.items %}
+      <tbody>
+        <td> {{ search_item.name }} </td>
+        <td> {{ search_item.city }} </td>
+      </tbody>
+    {% endfor %}
+  </table>  
+{% else %}
+  <h1> Empty Result </h1>  
+{% endif %}
 
 <ul class="pagination">
 {% for page in search_items.iter_pages() %}
   {% if page %}
-    {% if search_field == None %}
+    {% if search_field == None or search_field == '' or search_field.isspace() %}
       <li><a href="{{ url_for('search', page_num=page) }}">{{ page }}</a></li>
     {% else %}
       <li><a href="{{ url_for('search', search_field=search_field, page_num=page) }}">{{ page }}</a></li>

@@ -8,9 +8,10 @@ from flask_mongoengine import MongoEngine
 import os
 
 app = Flask(__name__)
-# app.config["SECRET_KEY"] = 'flask-demo'
 
+# app.config["SECRET_KEY"] = 'flask-demo'
 app.config["SECRET_KEY"] = os.environ['SECRET_KEY']
+
 app.config['SESSION_TYPE'] = 'filesystem'
 
 # app.config['MONGODB_SETTINGS'] = {
@@ -21,7 +22,6 @@ app.config['SESSION_TYPE'] = 'filesystem'
 
 
 app.config['MONGODB_SETTINGS'] = {
-    'db': 'heroku_sk3bnlzs',
     'host': os.environ['MONGODB_URI']
 }
 
@@ -143,7 +143,7 @@ def session_auth(f):
 @session_auth
 def dashboard():
 	form = SearchForm(request.form)
-	return render_template('dashboard.html', form = form)
+	return render_template('dashboard.html', form = form, search_items=False)
 
 class SearchValidator(object):
 	@staticmethod
@@ -159,6 +159,12 @@ class SearchValidator(object):
 @app.route('/search/<string:search_field>/<int:page_num>')
 @session_auth
 def search(search_field=None, page_num=1):
+	page_num_param = request.args.get('page_num')
+	search_field_param = request.args.get('search_field')
+	if page_num_param:
+		page_num = int(page_num_param)
+	if search_field_param:
+		search_field = search_field_param
 	form = SearchForm(request.form)
 	if request.method == 'POST' and form.validate():
 		search_field = form.search_field.data

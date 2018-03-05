@@ -10,6 +10,9 @@
 			</div>
 			<input type="submit" class="btn btn-primary" value="Submit">
 		</form>
-	</div>
+
+	{% if search_items %}
 	{% include 'partials/_search.html' %}
+	{% endif %}
+	</div>	
 {% endblock %}

@@ -1,5 +1,21 @@
 {% extends 'layout.html' %}
 
 {% block body %}
-Index
+<div class="page-header">
+  <h1><small>Welcome to the Flask-Demo!</small></h1>
+</div>
+
+<div class="panel panel-default">
+  <div class="panel-heading">Query businesses and gets results that are paginated!</div>
+  <div class="panel-body">
+    This app is written with Flask, Mysql, MongoDB to help you query!
+    <div class="btn-group">
+		  <button class="btn btn-default btn-sm">
+		    <a href="/dashboard">Dashboard <span class="glyphicon glyphicon-chevron-right"></span></a>
+		  </button>
+		</div>
+  </div>
+</div>
+
+
 {% endblock %}
