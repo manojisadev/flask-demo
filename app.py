@@ -22,7 +22,7 @@ app.config['SESSION_TYPE'] = 'filesystem'
 
 
 app.config['MONGODB_SETTINGS'] = {
-    'host': os.environ['MONGODB_URI']
+  'host': os.environ['MONGODB_URI']
 }
 
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:root@localhost/testdb'
@@ -41,11 +41,11 @@ class Business(dbm.DynamicDocument):
 
 class User(db.Model):
 	__tablename__ = 'Users'
-	uid = db.Column(db.Integer, primary_key = True)
+	uid = db.Column(db.Integer, primary_key=True)
 	username = db.Column(db.String(20))
 	first_name = db.Column(db.String(20))
 	last_name = db.Column(db.String(20))
-	email = db.Column(db.String(20), unique = True)
+	email = db.Column(db.String(20), unique=True)
 	password = db.Column(db.String(120))
 
 @app.route('/')
@@ -53,24 +53,24 @@ def index():
 	return render_template('index.html')
 
 class RegisterForm(Form):
-	first_name = StringField('First Name', [validators.Length(min = 5, max = 20)])
-	last_name = StringField('Last Name', [validators.Length(min = 5, max = 20)])
-	username = StringField('Username', [validators.Length(min = 5, max = 20)])
-	email = StringField('Email', [validators.Length(min = 5, max = 20)])
+	first_name = StringField('First Name', [validators.Length(min=5, max=20)])
+	last_name = StringField('Last Name', [validators.Length(min=5, max=20)])
+	username = StringField('Username', [validators.Length(min=5, max=20)])
+	email = StringField('Email', [validators.Length(min=5, max=20)])
 	password = PasswordField('Password', [
-		validators.Length(min = 6, max = 50, message = 'Passwords must be a minimum of length 6'),
+		validators.Length(min=6, max=50, message='Passwords must be a minimum of length 6'),
 		validators.DataRequired(), 
-		validators.EqualTo('confirm', message = 'Passwords must match')])
+		validators.EqualTo('confirm', message='Passwords must match')])
 	confirm = PasswordField('Confirm Password', [validators.DataRequired()])
 
 class LoginForm(Form):
-	username = StringField('Username', [validators.Length(min = 5, max = 20)])
+	username = StringField('Username', [validators.Length(min=5, max=20)])
 	password_submitted = PasswordField('Password', [validators.DataRequired()])
 
 class SearchForm(Form):
 	search_field = StringField('City Name')
 
-@app.route('/register', methods = ['GET', 'POST'])
+@app.route('/register', methods=['GET', 'POST'])
 def register():
 	form = RegisterForm(request.form)
 	if request.method == 'POST' and form.validate():
@@ -92,7 +92,7 @@ def register():
 		flash('Account created!', 'success')
 		return redirect(url_for('index'))
 
-	return render_template('register.html', form = form)
+	return render_template('register.html', form=form)
 
 @app.route('/login', methods = ['GET', 'POST'])
 def login():
@@ -114,7 +114,7 @@ def login():
 		flash('Incorrect Username/Password', 'danger')
 		return redirect(url_for('login'))
 
-	return render_template('login.html', form = form)
+	return render_template('login.html', form=form)
 
 def logout_auth(f):
 	@wraps(f)
@@ -145,7 +145,7 @@ def session_auth(f):
 @session_auth
 def dashboard():
 	form = SearchForm(request.form)
-	return render_template('dashboard.html', form = form, search_items=False)
+	return render_template('dashboard.html', form=form, search_items=False)
 
 class SearchValidator(object):
 	@staticmethod
@@ -174,7 +174,7 @@ def search(search_field=None, page_num=1):
 		search_items = Business.objects().paginate(per_page=10, page=page_num, error_out=True)
 	else:
 		search_items = Business.objects(city=search_field).paginate(per_page=10, page=page_num, error_out=True)
-	return render_template('dashboard.html', search_items=search_items, search_field=search_field, form = form)
+	return render_template('dashboard.html', search_items=search_items, search_field=search_field, form=form)
 
 if __name__ == '__main__':
 	app.run(debug=True)
