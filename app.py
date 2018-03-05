@@ -5,6 +5,7 @@ from passlib.hash import sha256_crypt
 from flask_sqlalchemy import SQLAlchemy
 from functools import wraps
 from flask_mongoengine import MongoEngine
+from sqlalchemy.exc import IntegrityError
 import os
 
 app = Flask(__name__)
@@ -42,7 +43,7 @@ class Business(dbm.DynamicDocument):
 class User(db.Model):
 	__tablename__ = 'Users'
 	uid = db.Column(db.Integer, primary_key=True)
-	username = db.Column(db.String(20))
+	username = db.Column(db.String(20), unique=True)
 	first_name = db.Column(db.String(20))
 	last_name = db.Column(db.String(20))
 	email = db.Column(db.String(20), unique=True)
@@ -72,25 +73,30 @@ class SearchForm(Form):
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
-	form = RegisterForm(request.form)
-	if request.method == 'POST' and form.validate():
-		first_name = form.first_name.data
-		last_name = form.last_name.data
-		username = form.username.data
-		email = form.email.data
-		password = sha256_crypt.encrypt(str(form.password.data))
-		user = User(
-			first_name = first_name, 
-			last_name = last_name, 
-			username = username, 
-			email = email,
-			password = password)
-		db.session.add(user)
-		db.session.commit()
-		session['logged_in'] = True
-		session['username'] = username
-		flash('Account created!', 'success')
-		return redirect(url_for('index'))
+	try:
+		form = RegisterForm(request.form)
+		if request.method == 'POST' and form.validate():
+			first_name = form.first_name.data
+			last_name = form.last_name.data
+			username = form.username.data
+			email = form.email.data
+			password = sha256_crypt.encrypt(str(form.password.data))
+			user = User(
+				first_name = first_name, 
+				last_name = last_name, 
+				username = username, 
+				email = email,
+				password = password)
+			db.session.add(user)
+			db.session.commit()
+			session['logged_in'] = True
+			session['username'] = username
+			flash('Account created!', 'success')
+			return redirect(url_for('index'))
+	except IntegrityError:
+		db.session.rollback()
+		flash('User already exists! Try another email/username', 'danger')
+		return redirect(url_for('register'))
 
 	return render_template('register.html', form=form)
 
